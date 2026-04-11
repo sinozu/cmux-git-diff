@@ -2,7 +2,7 @@
 
 A standalone CLI tool that displays `git diff` in a browser with live updates.
 
-Built for use with [cmux](https://cmux.com) browser panes, but works with any browser.
+Designed for [cmux](https://cmux.com) — automatically opens a browser tab in your terminal pane. Also works standalone with any browser via `http://localhost:PORT`.
 
 ## Features
 
