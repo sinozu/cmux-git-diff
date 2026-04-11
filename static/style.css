@@ -1,0 +1,218 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e6edf3;
+}
+
+.meta {
+    font-size: 12px;
+    color: #8b949e;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tabs, .view-toggle {
+    display: flex;
+    gap: 2px;
+    background: #21262d;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.tab, .view-btn {
+    background: transparent;
+    border: none;
+    color: #8b949e;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s;
+}
+
+.tab:hover, .view-btn:hover {
+    color: #e6edf3;
+}
+
+.tab.active, .view-btn.active {
+    background: #30363d;
+    color: #e6edf3;
+}
+
+.status {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.status.connected {
+    background: #1a3a2a;
+    color: #3fb950;
+}
+
+.status.disconnected {
+    background: #3d1f1f;
+    color: #f85149;
+}
+
+.stat-bar {
+    padding: 6px 16px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: #8b949e;
+    white-space: pre;
+}
+
+.stat-bar:empty {
+    display: none;
+}
+
+#diff-output {
+    padding: 0;
+}
+
+.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    color: #8b949e;
+    font-size: 16px;
+}
+
+/* diff2html dark theme overrides */
+.d2h-wrapper {
+    background: #0d1117 !important;
+}
+
+.d2h-file-header {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #e6edf3 !important;
+}
+
+.d2h-file-name-wrapper {
+    color: #e6edf3 !important;
+}
+
+.d2h-file-name {
+    color: #58a6ff !important;
+}
+
+.d2h-diff-table {
+    font-family: 'SF Mono', 'Fira Code', monospace !important;
+    font-size: 12px !important;
+}
+
+.d2h-code-line, .d2h-code-side-line {
+    background: #0d1117 !important;
+    color: #e6edf3 !important;
+    border-color: #21262d !important;
+}
+
+.d2h-code-line-prefix {
+    color: #8b949e !important;
+}
+
+.d2h-del {
+    background: #3d1f1f !important;
+    border-color: #4d2323 !important;
+}
+
+.d2h-del .d2h-code-line-ctn {
+    background: #3d1f1f !important;
+    color: #ffa7a7 !important;
+}
+
+.d2h-ins {
+    background: #1a3a2a !important;
+    border-color: #1f4a33 !important;
+}
+
+.d2h-ins .d2h-code-line-ctn {
+    background: #1a3a2a !important;
+    color: #7ee787 !important;
+}
+
+.d2h-info {
+    background: #161b22 !important;
+    color: #8b949e !important;
+    border-color: #30363d !important;
+}
+
+.d2h-file-diff {
+    border-color: #30363d !important;
+}
+
+.d2h-file-list-wrapper {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+}
+
+.d2h-file-list-line {
+    color: #e6edf3 !important;
+}
+
+.d2h-file-list-header {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #e6edf3 !important;
+}
+
+.d2h-code-linenumber {
+    background: #161b22 !important;
+    color: #484f58 !important;
+    border-color: #21262d !important;
+}
+
+.d2h-emptyplaceholder, .d2h-code-side-emptyplaceholder {
+    background: #161b22 !important;
+    border-color: #21262d !important;
+}
+
+.d2h-file-side-diff {
+    border-color: #30363d !important;
+}
+
+.d2h-tag {
+    background: #21262d !important;
+    border-color: #30363d !important;
+    color: #8b949e !important;
+}

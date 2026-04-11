@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>git-diff-browser</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/diff2html@3.4.48/bundles/css/diff2html.min.css">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <h1 id="repo-name">git-diff-browser</h1>
+            <span id="updated" class="meta"></span>
+        </div>
+        <div class="header-right">
+            <div class="tabs">
+                <button class="tab active" data-target="all">All</button>
+                <button class="tab" data-target="staged">Staged</button>
+                <button class="tab" data-target="unstaged">Unstaged</button>
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="side">Side by Side</button>
+                <button class="view-btn" data-view="line">Unified</button>
+            </div>
+            <span id="status" class="status connected">Connected</span>
+        </div>
+    </header>
+
+    <div id="stat" class="stat-bar"></div>
+    <div id="diff-output"></div>
+    <div id="no-changes" class="empty-state" style="display:none;">
+        <p>No changes detected</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/diff2html@3.4.48/bundles/js/diff2html.min.js"></script>
+    <script>
+    (function() {
+        const diffOutput = document.getElementById('diff-output');
+        const noChanges = document.getElementById('no-changes');
+        const statBar = document.getElementById('stat');
+        const statusEl = document.getElementById('status');
+        const repoNameEl = document.getElementById('repo-name');
+        const updatedEl = document.getElementById('updated');
+
+        let currentView = 'side';
+        let currentTab = 'all';
+        let lastData = null;
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTab = btn.dataset.target;
+                if (lastData) renderDiff(lastData);
+            });
+        });
+
+        // View toggle
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentView = btn.dataset.view;
+                if (lastData) renderDiff(lastData);
+            });
+        });
+
+        function renderDiff(data) {
+            lastData = data;
+
+            let diffText = '';
+            if (currentTab === 'staged') {
+                diffText = data.staged || '';
+            } else if (currentTab === 'unstaged') {
+                diffText = data.unstaged || '';
+            } else {
+                diffText = (data.staged || '') + (data.unstaged || '');
+            }
+
+            if (!diffText.trim()) {
+                diffOutput.style.display = 'none';
+                noChanges.style.display = 'flex';
+                statBar.textContent = '';
+                return;
+            }
+
+            diffOutput.style.display = 'block';
+            noChanges.style.display = 'none';
+
+            if (data.stat) {
+                statBar.textContent = data.stat;
+            }
+
+            const outputFormat = currentView === 'side' ? 'side-by-side' : 'line-by-line';
+            const html = Diff2Html.html(diffText, {
+                drawFileList: true,
+                matching: 'lines',
+                outputFormat: outputFormat,
+                colorScheme: 'dark',
+            });
+            diffOutput.innerHTML = html;
+
+            updatedEl.textContent = 'Updated: ' + new Date().toLocaleTimeString();
+        }
+
+        // Fetch repo info
+        fetch('/api/info')
+            .then(r => r.json())
+            .then(info => {
+                repoNameEl.textContent = info.repo;
+                document.title = info.repo + ' - git-diff-browser';
+            })
+            .catch(() => {});
+
+        // WebSocket connection with auto-reconnect
+        function connect() {
+            const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(proto + '//' + location.host + '/ws');
+
+            ws.onopen = () => {
+                statusEl.textContent = 'Connected';
+                statusEl.className = 'status connected';
+            };
+
+            ws.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    renderDiff(data);
+                } catch (err) {
+                    console.error('parse error:', err);
+                }
+            };
+
+            ws.onclose = () => {
+                statusEl.textContent = 'Reconnecting...';
+                statusEl.className = 'status disconnected';
+                setTimeout(connect, 2000);
+            };
+
+            ws.onerror = () => {
+                ws.close();
+            };
+        }
+
+        // Initial fetch then connect WebSocket
+        fetch('/api/diff')
+            .then(r => r.json())
+            .then(data => renderDiff(data))
+            .catch(() => {});
+
+        connect();
+    })();
+    </script>
+</body>
+</html>
