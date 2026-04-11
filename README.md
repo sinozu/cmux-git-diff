@@ -10,8 +10,10 @@ Built for use with [cmux](https://cmux.com) browser panes, but works with any br
 - **Rich diff view** — Powered by [diff2html](https://diff2html.xyz/) with side-by-side and unified views
 - **Dark theme** — GitHub-style dark theme, designed for cmux
 - **Staged/Unstaged tabs** — Switch between staged, unstaged, or all changes
-- **cmux integration** — Automatically opens a browser pane when running inside cmux
+- **cmux integration** — Automatically opens a browser tab in the current pane when running inside cmux
+- **Multi-workspace safe** — Each instance uses an OS-assigned port, no conflicts
 - **Single binary** — No runtime dependencies
+- **Security** — Localhost-only by default; WebSocket Origin check enforced on non-localhost binds
 
 ## Installation
 
@@ -47,12 +49,18 @@ The server starts on a random available port. The URL is printed to the terminal
 
 ### cmux
 
-When running inside cmux, `cmux-git-diff` detects `CMUX_WORKSPACE_ID` and automatically opens a browser pane:
+When running inside cmux, `cmux-git-diff` detects `CMUX_WORKSPACE_ID` and opens a browser tab alongside the terminal in the same pane:
 
 ```bash
-# In a cmux terminal pane
+# In a cmux terminal pane — browser tab opens automatically
 cmux-git-diff
 ```
+
+Multiple workspaces can run `cmux-git-diff` simultaneously without port conflicts.
+
+### Security
+
+By default the server binds to `localhost` only. If you bind to a non-localhost address (`-bind 0.0.0.0`), a warning is logged and WebSocket Origin checks are enforced to prevent cross-site access.
 
 ## License
 
