@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -70,21 +71,65 @@ func main() {
 
 func openBrowser(url string) {
 	wsID := os.Getenv("CMUX_WORKSPACE_ID")
-	if wsID != "" {
-		cmux, err := exec.LookPath("cmux")
-		if err == nil {
-			cmd := exec.Command(cmux, "new-pane",
-				"--type", "browser",
-				"--workspace", wsID,
-				"--url", url,
-			)
-			if err := cmd.Run(); err != nil {
-				log.Printf("cmux new-pane: %v", err)
-			}
-			return
-		}
+	if wsID == "" {
+		fmt.Printf("\n  Open in browser: %s\n\n", url)
+		return
 	}
 
-	// Fallback: just print the URL
-	fmt.Printf("\n  Open in browser: %s\n\n", url)
+	cmuxBin, err := exec.LookPath("cmux")
+	if err != nil {
+		fmt.Printf("\n  Open in browser: %s\n\n", url)
+		return
+	}
+
+	// Get current pane from cmux identify
+	paneRef := getCmuxPaneRef(cmuxBin, wsID)
+	if paneRef != "" {
+		// Open as a browser tab in the same pane
+		cmd := exec.Command(cmuxBin, "new-surface",
+			"--type", "browser",
+			"--pane", paneRef,
+			"--workspace", wsID,
+			"--url", url,
+		)
+		if err := cmd.Run(); err != nil {
+			log.Printf("cmux new-surface: %v", err)
+		}
+		return
+	}
+
+	// Fallback: new pane
+	cmd := exec.Command(cmuxBin, "new-pane",
+		"--type", "browser",
+		"--workspace", wsID,
+		"--url", url,
+	)
+	if err := cmd.Run(); err != nil {
+		log.Printf("cmux new-pane: %v", err)
+	}
+}
+
+func getCmuxPaneRef(cmuxBin, wsID string) string {
+	surfaceID := os.Getenv("CMUX_SURFACE_ID")
+	if surfaceID == "" {
+		return ""
+	}
+
+	out, err := exec.Command(cmuxBin, "identify",
+		"--surface", surfaceID,
+		"--workspace", wsID,
+	).Output()
+	if err != nil {
+		return ""
+	}
+
+	var result struct {
+		Caller struct {
+			PaneRef string `json:"pane_ref"`
+		} `json:"caller"`
+	}
+	if err := json.Unmarshal(out, &result); err != nil {
+		return ""
+	}
+	return result.Caller.PaneRef
 }
