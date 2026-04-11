@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	port := flag.Int("port", 8080, "server port")
+	port := flag.Int("port", 6848, "server port")
 	bind := flag.String("bind", "localhost", "bind address")
 	interval := flag.Duration("interval", 3*time.Second, "polling interval")
 	flag.Parse()

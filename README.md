@@ -35,12 +35,12 @@ Run inside any git repository:
 cmux-git-diff
 ```
 
-Open `http://localhost:8080` in your browser.
+Open `http://localhost:6848` in your browser.
 
 ### Options
 
 ```
--port     int       Server port (default: 8080)
+-port     int       Server port (default: 6848)
 -bind     string    Bind address (default: localhost)
 -interval duration  Polling interval (default: 3s)
 ```
