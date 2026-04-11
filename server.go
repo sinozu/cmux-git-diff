@@ -18,6 +18,7 @@ var staticFiles embed.FS
 // Server handles HTTP requests and WebSocket connections.
 type Server struct {
 	repoName string
+	isLocal  bool
 	mu       sync.RWMutex
 	latest   *DiffResult
 	clients  map[*wsClient]struct{}
@@ -29,10 +30,13 @@ type wsClient struct {
 	ctx  context.Context
 }
 
-// NewServer creates a new Server.
-func NewServer(repoName string) *Server {
+// NewServer creates a new Server. When isLocal is true, Origin checks are skipped
+// for WebSocket connections (safe for localhost). When false, only same-origin
+// connections are accepted.
+func NewServer(repoName string, isLocal bool) *Server {
 	return &Server{
 		repoName: repoName,
+		isLocal:  isLocal,
 		clients:  make(map[*wsClient]struct{}),
 	}
 }
@@ -81,7 +85,7 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: s.isLocal,
 	})
 	if err != nil {
 		log.Printf("websocket accept: %v", err)

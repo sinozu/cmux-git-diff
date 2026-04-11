@@ -19,6 +19,10 @@ func main() {
 	interval := flag.Duration("interval", 3*time.Second, "polling interval")
 	flag.Parse()
 
+	if *bind != "localhost" && *bind != "127.0.0.1" {
+		log.Printf("WARNING: binding to %s exposes diff content (possibly sensitive code) to the network", *bind)
+	}
+
 	repoDir, err := GetRepoRoot()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error: not a git repository")
@@ -29,7 +33,8 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", *bind, *port)
 	url := fmt.Sprintf("http://%s", addr)
 
-	srv := NewServer(repoName)
+	isLocal := *bind == "localhost" || *bind == "127.0.0.1"
+	srv := NewServer(repoName, isLocal)
 	httpServer := &http.Server{
 		Addr:    addr,
 		Handler: srv.Handler(),
