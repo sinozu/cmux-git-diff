@@ -20,8 +20,8 @@
                 <button class="tab" data-target="unstaged">Unstaged</button>
             </div>
             <div class="view-toggle">
-                <button class="view-btn active" data-view="side">Side by Side</button>
-                <button class="view-btn" data-view="line">Unified</button>
+                <button class="view-btn" data-view="side">Side by Side</button>
+                <button class="view-btn active" data-view="line">Unified</button>
             </div>
             <span id="status" class="status connected">Connected</span>
         </div>
@@ -43,7 +43,7 @@
         const repoNameEl = document.getElementById('repo-name');
         const updatedEl = document.getElementById('updated');
 
-        let currentView = 'side';
+        let currentView = 'line';
         let currentTab = 'all';
         let lastData = null;
 
