@@ -35,12 +35,12 @@ Run inside any git repository:
 cmux-git-diff
 ```
 
-Open `http://localhost:6848` in your browser.
+The server starts on a random available port. The URL is printed to the terminal.
 
 ### Options
 
 ```
--port     int       Server port (default: 6848)
+-port     int       Server port (default: 0 = auto-assign)
 -bind     string    Bind address (default: localhost)
 -interval duration  Polling interval (default: 3s)
 ```

@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	port := flag.Int("port", 6848, "server port")
+	port := flag.Int("port", 0, "server port (0 = auto-assign)")
 	bind := flag.String("bind", "localhost", "bind address")
 	interval := flag.Duration("interval", 3*time.Second, "polling interval")
 	flag.Parse()
@@ -31,13 +31,18 @@ func main() {
 	}
 
 	repoName := GetRepoName(repoDir)
-	addr := fmt.Sprintf("%s:%d", *bind, *port)
-	url := fmt.Sprintf("http://%s", addr)
+
+	// Listen first, then resolve the actual port (supports port 0 = OS auto-assign)
+	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *bind, *port))
+	if err != nil {
+		log.Fatalf("listen: %v", err)
+	}
+	actualAddr := ln.Addr().String()
+	url := fmt.Sprintf("http://%s", actualAddr)
 
 	isLocal := *bind == "localhost" || *bind == "127.0.0.1"
 	srv := NewServer(repoName, isLocal)
 	httpServer := &http.Server{
-		Addr:    addr,
 		Handler: srv.Handler(),
 	}
 
@@ -47,14 +52,9 @@ func main() {
 		srv.UpdateDiff(result)
 	})
 
-	// Start HTTP server
-	ln, err := net.Listen("tcp", addr)
-	if err != nil {
-		log.Fatalf("listen: %v", err)
-	}
 	go httpServer.Serve(ln)
 
-	log.Printf("git-diff-browser: %s on %s", repoName, url)
+	log.Printf("cmux-git-diff: %s on %s", repoName, url)
 
 	// Open in cmux browser pane if available
 	openBrowser(url)
