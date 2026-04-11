@@ -18,6 +18,7 @@ func main() {
 	port := flag.Int("port", 0, "server port (0 = auto-assign)")
 	bind := flag.String("bind", "localhost", "bind address")
 	interval := flag.Duration("interval", 3*time.Second, "polling interval")
+	newPane := flag.Bool("pane", false, "open in a new pane instead of a tab")
 	flag.Parse()
 
 	if *bind != "localhost" && *bind != "127.0.0.1" {
@@ -56,8 +57,8 @@ func main() {
 
 	log.Printf("cmux-git-diff: %s on %s", repoName, url)
 
-	// Open in cmux browser pane if available
-	openBrowser(url)
+	// Open in cmux browser if available
+	openBrowser(url, *newPane)
 
 	// Wait for interrupt
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -69,7 +70,7 @@ func main() {
 	httpServer.Shutdown(context.Background())
 }
 
-func openBrowser(url string) {
+func openBrowser(url string, newPane bool) {
 	wsID := os.Getenv("CMUX_WORKSPACE_ID")
 	if wsID == "" {
 		fmt.Printf("\n  Open in browser: %s\n\n", url)
@@ -82,10 +83,21 @@ func openBrowser(url string) {
 		return
 	}
 
-	// Get current pane from cmux identify
+	if newPane {
+		cmd := exec.Command(cmuxBin, "new-pane",
+			"--type", "browser",
+			"--workspace", wsID,
+			"--url", url,
+		)
+		if err := cmd.Run(); err != nil {
+			log.Printf("cmux new-pane: %v", err)
+		}
+		return
+	}
+
+	// Default: open as a browser tab in the same pane
 	paneRef := getCmuxPaneRef(cmuxBin, wsID)
 	if paneRef != "" {
-		// Open as a browser tab in the same pane
 		cmd := exec.Command(cmuxBin, "new-surface",
 			"--type", "browser",
 			"--pane", paneRef,
@@ -98,7 +110,7 @@ func openBrowser(url string) {
 		return
 	}
 
-	// Fallback: new pane
+	// Fallback: new pane if pane ref unavailable
 	cmd := exec.Command(cmuxBin, "new-pane",
 		"--type", "browser",
 		"--workspace", wsID,

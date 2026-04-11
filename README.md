@@ -45,6 +45,7 @@ The server starts on a random available port. The URL is printed to the terminal
 -port     int       Server port (default: 0 = auto-assign)
 -bind     string    Bind address (default: localhost)
 -interval duration  Polling interval (default: 3s)
+-pane               Open in a new pane instead of a tab
 ```
 
 ### cmux
@@ -52,8 +53,11 @@ The server starts on a random available port. The URL is printed to the terminal
 When running inside cmux, `cmux-git-diff` detects `CMUX_WORKSPACE_ID` and opens a browser tab alongside the terminal in the same pane:
 
 ```bash
-# In a cmux terminal pane — browser tab opens automatically
+# Browser tab opens in the same pane (default)
 cmux-git-diff
+
+# Browser opens in a separate pane
+cmux-git-diff -pane
 ```
 
 Multiple workspaces can run `cmux-git-diff` simultaneously without port conflicts.
