@@ -1,4 +1,4 @@
-# git-diff-browser
+# cmux-git-diff
 
 A standalone CLI tool that displays `git diff` in a browser with live updates.
 
@@ -16,15 +16,15 @@ Built for use with [cmux](https://cmux.com) browser panes, but works with any br
 ## Installation
 
 ```bash
-go install github.com/sinozu/git-diff-browser@latest
+go install github.com/sinozu/cmux-git-diff@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/sinozu/git-diff-browser.git
-cd git-diff-browser
-go build -o git-diff-browser .
+git clone https://github.com/sinozu/cmux-git-diff.git
+cd cmux-git-diff
+go build -o cmux-git-diff .
 ```
 
 ## Usage
@@ -32,7 +32,7 @@ go build -o git-diff-browser .
 Run inside any git repository:
 
 ```bash
-git-diff-browser
+cmux-git-diff
 ```
 
 Open `http://localhost:8080` in your browser.
@@ -47,11 +47,11 @@ Open `http://localhost:8080` in your browser.
 
 ### cmux
 
-When running inside cmux, `git-diff-browser` detects `CMUX_WORKSPACE_ID` and automatically opens a browser pane:
+When running inside cmux, `cmux-git-diff` detects `CMUX_WORKSPACE_ID` and automatically opens a browser pane:
 
 ```bash
 # In a cmux terminal pane
-git-diff-browser
+cmux-git-diff
 ```
 
 ## License

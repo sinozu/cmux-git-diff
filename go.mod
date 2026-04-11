@@ -1,4 +1,4 @@
-module github.com/sinozu/git-diff-browser
+module github.com/sinozu/cmux-git-diff
 
 go 1.24.2
 
