@@ -74,9 +74,9 @@
             if (currentTab === 'staged') {
                 diffText = data.staged || '';
             } else if (currentTab === 'unstaged') {
-                diffText = data.unstaged || '';
+                diffText = (data.unstaged || '') + (data.untracked || '');
             } else {
-                diffText = (data.staged || '') + (data.unstaged || '');
+                diffText = (data.staged || '') + (data.unstaged || '') + (data.untracked || '');
             }
 
             if (!diffText.trim()) {
