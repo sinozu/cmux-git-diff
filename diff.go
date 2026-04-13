@@ -9,10 +9,11 @@ import (
 
 // DiffResult holds the output of git diff commands.
 type DiffResult struct {
-	Staged   string `json:"staged"`
-	Unstaged string `json:"unstaged"`
-	Stat     string `json:"stat"`
-	Hash     string `json:"hash"`
+	Staged    string `json:"staged"`
+	Unstaged  string `json:"unstaged"`
+	Untracked string `json:"untracked"`
+	Stat      string `json:"stat"`
+	Hash      string `json:"hash"`
 }
 
 // GetDiff runs git diff commands in the given repository directory
@@ -28,21 +29,65 @@ func GetDiff(repoDir string) (*DiffResult, error) {
 		return nil, fmt.Errorf("git diff: %w", err)
 	}
 
+	untracked, err := getUntrackedDiff(repoDir)
+	if err != nil {
+		// non-fatal: proceed without untracked info
+		untracked = ""
+	}
+
 	stat, err := runGit(repoDir, "diff", "--stat", "HEAD")
 	if err != nil {
 		// non-fatal: stat may fail on initial commit
 		stat = ""
 	}
 
-	combined := staged + unstaged
+	combined := staged + unstaged + untracked
 	hash := fmt.Sprintf("%x", sha256.Sum256([]byte(combined)))
 
 	return &DiffResult{
-		Staged:   staged,
-		Unstaged: unstaged,
-		Stat:     strings.TrimSpace(stat),
-		Hash:     hash,
+		Staged:    staged,
+		Unstaged:  unstaged,
+		Untracked: untracked,
+		Stat:      strings.TrimSpace(stat),
+		Hash:      hash,
 	}, nil
+}
+
+// getUntrackedDiff synthesizes a unified diff for each file that is
+// present in the working tree but not yet tracked by git. Files matching
+// .gitignore are excluded via --exclude-standard.
+func getUntrackedDiff(repoDir string) (string, error) {
+	// -z emits NUL-separated paths so filenames with spaces/newlines are safe.
+	out, err := runGit(repoDir, "ls-files", "--others", "--exclude-standard", "-z")
+	if err != nil {
+		return "", err
+	}
+	if out == "" {
+		return "", nil
+	}
+
+	files := strings.Split(strings.TrimRight(out, "\x00"), "\x00")
+
+	var b strings.Builder
+	for _, f := range files {
+		if f == "" {
+			continue
+		}
+		// `git diff --no-index /dev/null <file>` produces a standard
+		// unified diff with `--- /dev/null` / `+++ b/<file>` headers,
+		// which diff2html can render as a new-file addition.
+		// `--` disambiguates paths from options; `--no-color` strips ANSI.
+		// Exit code 1 (= has differences) is handled by runGit.
+		diff, err := runGit(repoDir, "diff", "--no-index", "--no-color", "--", "/dev/null", f)
+		if err != nil {
+			// Skip unreadable files (symlinks to nowhere, permission errors, etc.)
+			// rather than failing the whole diff.
+			continue
+		}
+		b.WriteString(diff)
+	}
+
+	return b.String(), nil
 }
 
 // GetRepoName returns the basename of the git repository root.
